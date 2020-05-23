@@ -32,6 +32,10 @@ import timber.log.Timber
 class MainActivity : AppCompatActivity(), LifecycleObserver {
     private var revenue = 0
     private var dessertsSold = 0
+    private lateinit var dessertTimer: DessertTimer
+    private val _keyRevenue = "key_revenue"
+    private val _keyDessertsSold = "key_desserts"
+    private val _keySecondsCount = "key_seconds"
 
     // Contains all the views
     private lateinit var binding: ActivityMainBinding
@@ -61,6 +65,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             Dessert(R.drawable.nougat, 5000, 16000),
             Dessert(R.drawable.oreo, 6000, 20000)
     )
+
     private var currentDessert = allDesserts[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,12 +79,38 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             onDessertClicked()
         }
 
+        dessertTimer = DessertTimer(this.lifecycle)
+
+        if(savedInstanceState != null) {
+            revenue = savedInstanceState.getInt(_keyRevenue, 0)
+            dessertsSold = savedInstanceState.getInt(_keyDessertsSold, 0)
+            dessertTimer.secondsCount = savedInstanceState.getInt(_keySecondsCount, 0)
+        }
+
         // Set the TextViews to the right values
         binding.revenue = revenue
         binding.amountSold = dessertsSold
 
         // Make sure the correct dessert is showing
         binding.dessertButton.setImageResource(currentDessert.imageId)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(_keyRevenue, revenue)
+        outState.putInt(_keyDessertsSold, dessertsSold)
+        outState.putInt(_keySecondsCount, dessertTimer.secondsCount)
+        Timber.i("onSaveInstanceState called")
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        if(savedInstanceState != null) {
+            revenue = savedInstanceState.getInt(_keyRevenue, 0)
+            dessertsSold = savedInstanceState.getInt(_keyDessertsSold, 0)
+            dessertTimer.secondsCount = savedInstanceState.getInt(_keySecondsCount, 0)
+        }
     }
 
     /**
@@ -152,6 +183,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     override fun onStart() {
         super.onStart()
         Timber.i("onStart called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Timber.i("onStop called")
     }
 
 }
